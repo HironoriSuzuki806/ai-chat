@@ -4,15 +4,28 @@
 
 ## 技術スタック
 
-| レイヤー | 技術 |
-|--------|------|
-| Framework | Next.js 15 (App Router) |
-| AI SDK | Vercel AI SDK v6 (`ai` package) |
-| AI Model | Anthropic Claude (AI Gatewayルーティング) |
+### フロントエンド
+
+| レイヤー      | 技術                    |
+| ------------- | ----------------------- |
+| Framework     | Next.js 15 (App Router) |
 | UI Components | shadcn/ui + AI Elements |
-| Database | MongoDB (会話履歴の永続化) |
-| Styling | Tailwind CSS |
-| Deployment | Vercel |
+| Styling       | Tailwind CSS            |
+
+### バックエンド
+
+| レイヤー        | 技術                                      |
+| --------------- | ----------------------------------------- |
+| Framework       | Next.js 15 (App Router) + Hono            |
+| ORM             | Prisma.js                                 |
+| AI エージェント | Mastra                                    |
+| AI Model        | Anthropic Claude (AI Gatewayルーティング) |
+| Database        | MongoDB (会話履歴の永続化)                |
+
+### インフラストラクチャ
+
+- デプロイ先: Google Cloud Run
+- 想定同時接続数: 5-10人
 
 ## 主要機能
 
@@ -47,13 +60,13 @@ lib/
 
 ## APIルート
 
-| Method | Path | 説明 |
-|--------|------|------|
-| POST | `/api/chat` | メッセージ送信・ストリーミング応答。MongoDB に保存。|
-| GET | `/api/conversations` | 会話一覧取得（タイトル・更新日時） |
-| POST | `/api/conversations` | 新規会話作成 |
-| GET | `/api/conversations/[id]` | 指定会話のメッセージ全件取得 |
-| DELETE | `/api/conversations/[id]` | 指定会話の削除 |
+| Method | Path                      | 説明                                                 |
+| ------ | ------------------------- | ---------------------------------------------------- |
+| POST   | `/api/chat`               | メッセージ送信・ストリーミング応答。MongoDB に保存。 |
+| GET    | `/api/conversations`      | 会話一覧取得（タイトル・更新日時）                   |
+| POST   | `/api/conversations`      | 新規会話作成                                         |
+| GET    | `/api/conversations/[id]` | 指定会話のメッセージ全件取得                         |
+| DELETE | `/api/conversations/[id]` | 指定会話の削除                                       |
 
 ## MongoDBスキーマ
 
@@ -95,13 +108,13 @@ VERCEL_OIDC_TOKEN=...           # vercel env pull で自動生成
 
 ```ts
 // AI Gatewayの使い方（プロバイダー文字列で自動ルーティング）
-import { streamText } from 'ai'
+import { streamText } from "ai";
 
 const result = streamText({
-  model: 'anthropic/claude-sonnet-4.6',
-  system: 'あなたは親切で丁寧な日本語のAIアシスタントです。',
+  model: "anthropic/claude-sonnet-4.6",
+  system: "あなたは親切で丁寧な日本語のAIアシスタントです。",
   messages,
-})
+});
 ```
 
 ## 開発コマンド
@@ -127,6 +140,15 @@ npm run typecheck    # 型チェック
 - **ユーザー管理**: 不要
 - **ダークモード**: 不要
 - **モバイル対応**: レスポンシブ対応（Tailwind）
+
+## デプロイ手順
+
+1. Google Cloud Project の作成
+1. Cloud Run の有効化
+1. Dockerfile の作成
+1. Cloud Build でのイメージビルド
+1. Cloud Run へのデプロイ
+1. 環境変数の設定
 
 ## 今後の拡張ポイント（現時点では実装しない）
 
