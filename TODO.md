@@ -28,12 +28,13 @@
 
 ## Phase 3: AI エージェント設定（Mastra）
 
-- [ ] `lib/mastra/index.ts` に Mastra インスタンスを初期化する
-- [ ] `lib/mastra/agents/chat-agent.ts` にチャットエージェントを定義する
+- [x] `lib/mastra/index.ts` に Mastra インスタンスを初期化する
+- [x] `lib/mastra/agents/chat-agent.ts` にチャットエージェントを定義する
   - モデル: `anthropic/claude-sonnet-4.6`（AI Gateway経由）
   - システムプロンプト: 親切で丁寧な日本語AIアシスタント
-- [ ] Vercel AI Gateway の認証設定をする
-  - `ANTHROPIC_API_KEY` または `VERCEL_OIDC_TOKEN` を `.env.local` に設定
+- [x] AI Gateway の認証設定を `.env.local` に記載する
+  - `AI_GATEWAY_API_KEY`（推奨）/ `VERCEL_OIDC_TOKEN` / `ANTHROPIC_API_KEY`（フォールバック）
+- [ ] ※ `components/ai-elements/prompt-input.tsx` の Base UI / Radix 型不一致 → Phase 5 で修正
 
 ---
 
