@@ -2,19 +2,16 @@
 
 ## Phase 1: プロジェクト初期化
 
-- [ ] Next.js 15 プロジェクトを作成する
-  - `npx create-next-app@latest . --typescript --tailwind --app --src-dir=false --import-alias="@/*"`
-- [ ] shadcn/ui を初期化する
-  - `npx shadcn@latest init`
-- [ ] 必要なパッケージをインストールする
-  - AI SDK: `npm install ai`
-  - Hono (Next.js内APIルーター): `npm install hono @hono/node-server`
-  - Prisma + MongoDB: `npm install prisma @prisma/client`、`npx prisma init --datasource-provider mongodb`
-  - Mastra: `npm install @mastra/core`
-  - MongoDB ドライバー: `npm install mongodb`
-- [ ] AI Elements をインストールする
-  - `npx ai-elements@latest add message conversation prompt-input`
-- [ ] `.env.local` を作成し `.gitignore` に追加する
+- [x] Next.js 16.2.6 プロジェクトを作成する（App Router / Turbopack / standalone出力）
+- [x] shadcn/ui を初期化する（`components.json` 生成済み）
+- [x] 必要なパッケージをインストールする
+  - AI SDK: `ai@6.0.182` ✅
+  - Hono: `hono@4.12.18` ✅（`@hono/node-server` は Next.js App Router 統合では不要）
+  - Prisma + MongoDB: `prisma@7.8.0` / `@prisma/client` ✅、`npx prisma init` 済み
+  - Mastra: `@mastra/core@1.34.0` ✅
+  - MongoDB ドライバー: `mongodb@7.2.0` ✅
+- [x] AI Elements をインストールする（`message` / `conversation` / `prompt-input`）
+- [x] `.env.local` を作成し `.gitignore` に追加する
 
 ---
 
