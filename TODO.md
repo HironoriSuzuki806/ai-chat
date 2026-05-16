@@ -20,19 +20,12 @@
 
 ## Phase 2: データベース設計
 
-- [ ] MongoDB Atlas でクラスターを作成し接続文字列を取得する
-- [ ] `prisma/schema.prisma` に `Conversation` モデルを定義する
-  ```prisma
-  model Conversation {
-    id        String    @id @default(auto()) @map("_id") @db.ObjectId
-    title     String
-    messages  Json[]
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-  }
-  ```
-- [ ] `npx prisma generate` で Prisma Client を生成する
-- [ ] `lib/prisma.ts` に Prisma Client のシングルトンを実装する
+- [ ] MongoDB Atlas でクラスターを作成し接続文字列を取得する（手動作業）
+- [x] `prisma/schema.prisma` に `Conversation` モデルを定義する
+- [x] `npx prisma generate` で Prisma Client を生成する
+- [x] `lib/mongodb.ts` にネイティブ MongoDB クライアントのシングルトンを実装する
+      ※ Prisma 7 の MongoDB adapter は未リリースのため native driver を使用
+- [x] `lib/models/conversation.ts` に TypeScript 型定義を実装する
 
 ---
 
