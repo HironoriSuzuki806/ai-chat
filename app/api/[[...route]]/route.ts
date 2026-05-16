@@ -4,6 +4,7 @@ import { ObjectId } from "mongodb"
 import {
   createUIMessageStream,
   createUIMessageStreamResponse,
+  type UIMessage,
   type UIMessageChunk,
 } from "ai"
 import { toAISdkStream } from "@mastra/ai-sdk"
@@ -81,7 +82,7 @@ app.delete("/conversations/:id", async (c) => {
 // POST /api/chat — streaming chat response via Mastra agent
 app.post("/chat", async (c) => {
   const body = await c.req.json<{
-    messages: Message[]
+    messages: UIMessage[]
     conversationId?: string
   }>()
   const { messages, conversationId } = body
@@ -97,7 +98,6 @@ app.post("/chat", async (c) => {
 
   const uiMessageStream = createUIMessageStream({
     execute: async ({ writer }) => {
-      // merge pipes the ReadableStream into the UI message writer
       writer.merge(mastraStream)
     },
     onFinish: async () => {
@@ -108,9 +108,15 @@ app.post("/chat", async (c) => {
       if (!text) return
 
       const now = new Date()
-      const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")
+      // Extract text content from the last user UIMessage parts
+      const lastUserMsg = [...messages].reverse().find((m) => m.role === "user")
+      const userText = lastUserMsg?.parts
+        ?.find((p) => p.type === "text")
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ?.text ?? (lastUserMsg as any)?.content ?? ""
+
       const newMessages: Message[] = [
-        ...(lastUserMessage ? [{ ...lastUserMessage, createdAt: now }] : []),
+        ...(userText ? [{ role: "user" as const, content: userText, createdAt: now }] : []),
         { role: "assistant", content: text, createdAt: now },
       ]
 

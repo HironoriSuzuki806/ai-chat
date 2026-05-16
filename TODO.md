@@ -55,20 +55,20 @@
 
 ## Phase 5: フロントエンド実装
 
-- [ ] `app/layout.tsx` にグローバルレイアウト（フォント・メタデータ）を実装する
-- [ ] `app/page.tsx` にメインページを実装する（サイドバー + チャット画面の2カラムレイアウト）
-- [ ] `components/sidebar.tsx` を実装する
+- [x] `app/layout.tsx` にグローバルレイアウト（フォント・メタデータ）を実装する
+- [x] `app/page.tsx` にメインページを実装する（サイドバー + チャット画面の2カラムレイアウト）
+- [x] `components/sidebar.tsx` を実装する
   - 会話一覧の表示（`GET /api/conversations`）
   - 新規会話ボタン
   - 会話削除ボタン
   - 選択中の会話をハイライト
-- [ ] `components/chat-window.tsx` を実装する
+- [x] `components/chat-window.tsx` を実装する
   - AI Elements の `<Conversation>` と `<Message>` を使用
   - `useChat` フックで状態管理（`DefaultChatTransport` 使用）
   - 選択された会話の履歴をロード
-- [ ] `components/message-input.tsx` を実装する
-  - AI Elements の `<PromptInput>` を使用
-  - Enterキー送信・Shift+Enterで改行
+- [x] `components/message-input.tsx` を実装する
+  - シンプルな textarea ベース（`<PromptInput>` は Base UI/Radix 型不一致のため不使用）
+  - Enterキー送信・Shift+Enterで改行・高さ自動調整
 
 ---
 
