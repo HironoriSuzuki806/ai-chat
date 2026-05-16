@@ -40,15 +40,16 @@
 
 ## Phase 4: APIルート実装（Hono）
 
-- [ ] `app/api/[[...route]]/route.ts` に Hono を Next.js App Router と統合する
-- [ ] `GET /api/conversations` — 会話一覧取得（タイトル・更新日時、降順）を実装する
-- [ ] `POST /api/conversations` — 新規会話作成を実装する
-- [ ] `GET /api/conversations/:id` — 会話詳細（メッセージ全件）取得を実装する
-- [ ] `DELETE /api/conversations/:id` — 会話削除を実装する
-- [ ] `POST /api/chat` — ストリーミング応答を実装する
-  - `streamText` でMastraエージェントを呼び出す
-  - 応答完了後にメッセージを MongoDB へ保存する
-  - `toUIMessageStreamResponse()` でレスポンスを返す
+- [x] `app/api/[[...route]]/route.ts` に Hono を Next.js App Router と統合する
+- [x] `GET /api/conversations` — 会話一覧取得（タイトル・更新日時、降順）を実装する
+- [x] `POST /api/conversations` — 新規会話作成を実装する
+- [x] `GET /api/conversations/:id` — 会話詳細（メッセージ全件）取得を実装する
+- [x] `DELETE /api/conversations/:id` — 会話削除を実装する
+- [x] `POST /api/chat` — ストリーミング応答を実装する
+  - Mastraエージェント（`agent.stream()`）を呼び出す
+  - `@mastra/ai-sdk` の `toAISdkStream` で AI SDK v6 形式に変換する
+  - 応答完了後（`onFinish`）にメッセージを MongoDB へ保存する
+  - `createUIMessageStreamResponse()` でレスポンスを返す
 
 ---
 
