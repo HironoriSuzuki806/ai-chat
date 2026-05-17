@@ -34,7 +34,7 @@
   - システムプロンプト: 親切で丁寧な日本語AIアシスタント
 - [x] AI Gateway の認証設定を `.env.local` に記載する
   - `AI_GATEWAY_API_KEY`（推奨）/ `VERCEL_OIDC_TOKEN` / `ANTHROPIC_API_KEY`（フォールバック）
-- [ ] ※ `components/ai-elements/prompt-input.tsx` の Base UI / Radix 型不一致 → Phase 5 で修正
+- [x] ※ `components/ai-elements/prompt-input.tsx` の Base UI / Radix 型不一致 → 未使用のため削除で解消
 
 ---
 
@@ -74,15 +74,15 @@
 
 ## Phase 6: 動作確認（ローカル）
 
-- [ ] `npm run dev` で開発サーバーを起動して全機能を確認する
+- [ ] `npm run dev` で開発サーバーを起動して全機能を確認する ※MongoDB Atlas 接続文字列設定後に実施
   - メッセージ送信とストリーミング表示
   - 会話履歴がMongoDBに保存されること
   - ページリロード後に履歴が復元されること
   - 複数会話の切り替え
   - 会話の削除
-- [ ] `npm run build` でビルドエラーがないことを確認する
-- [ ] `npm run typecheck` で型エラーがないことを確認する
-- [ ] レスポンシブデザインをモバイル幅で確認する
+- [x] `npm run build` でビルドエラーがないことを確認する（`prompt-input.tsx` 削除で解消）
+- [x] `npm run typecheck` で型エラーがないことを確認する（`typecheck` スクリプト追加）
+- [ ] レスポンシブデザインをモバイル幅で確認する ※MongoDB Atlas 接続後に実施
 
 ---
 
