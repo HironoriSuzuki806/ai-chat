@@ -88,9 +88,10 @@
 
 ## Phase 7: コンテナ化
 
-- [ ] `Dockerfile` を作成する（Node.js 22 Alpine ベース、マルチステージビルド）
-- [ ] `.dockerignore` を作成する
-- [ ] ローカルで `docker build` & `docker run` して動作確認する
+- [x] `Dockerfile` を作成する（Node.js 22 Alpine ベース、マルチステージビルド）
+- [x] `.dockerignore` を作成する
+- [x] ローカルで `docker build` & `docker run` して動作確認する
+      ※ MongoDB Atlas 接続文字列設定後に `/api/conversations` の完全動作確認を実施
 
 ---
 

@@ -1,11 +1,5 @@
 import { MongoClient, ServerApiVersion } from "mongodb"
 
-if (!process.env.MONGODB_URI) {
-  throw new Error("MONGODB_URI environment variable is not set")
-}
-
-const uri = process.env.MONGODB_URI
-
 const options = {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -19,16 +13,18 @@ declare global {
   var _mongoClientPromise: Promise<MongoClient> | undefined
 }
 
-let clientPromise: Promise<MongoClient>
+function getClientPromise(): Promise<MongoClient> {
+  const uri = process.env.MONGODB_URI
+  if (!uri) throw new Error("MONGODB_URI environment variable is not set")
 
-if (process.env.NODE_ENV === "development") {
-  // Hot reload 対策: グローバルにキャッシュして接続を再利用する
-  if (!global._mongoClientPromise) {
-    global._mongoClientPromise = new MongoClient(uri, options).connect()
+  if (process.env.NODE_ENV === "development") {
+    if (!global._mongoClientPromise) {
+      global._mongoClientPromise = new MongoClient(uri, options).connect()
+    }
+    return global._mongoClientPromise
   }
-  clientPromise = global._mongoClientPromise
-} else {
-  clientPromise = new MongoClient(uri, options).connect()
+
+  return new MongoClient(uri, options).connect()
 }
 
-export default clientPromise
+export default getClientPromise

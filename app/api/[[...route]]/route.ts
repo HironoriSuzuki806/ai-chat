@@ -23,7 +23,7 @@ const app = new Hono().basePath("/api")
 
 // GET /api/conversations — list conversations (title + updatedAt, descending)
 app.get("/conversations", async (c) => {
-  const client = await clientPromise
+  const client = await clientPromise()
   const db = client.db(DB_NAME)
   const docs = await db
     .collection<Conversation>(COLLECTION_NAME)
@@ -43,7 +43,7 @@ app.post("/conversations", async (c) => {
     createdAt: now,
     updatedAt: now,
   }
-  const client = await clientPromise
+  const client = await clientPromise()
   const db = client.db(DB_NAME)
   const result = await db.collection<Conversation>(COLLECTION_NAME).insertOne(conversation)
   return c.json({ _id: result.insertedId, ...conversation }, 201)
@@ -55,7 +55,7 @@ app.get("/conversations/:id", async (c) => {
   if (!ObjectId.isValid(id)) {
     return c.json({ error: "Invalid conversation ID" }, 400)
   }
-  const client = await clientPromise
+  const client = await clientPromise()
   const db = client.db(DB_NAME)
   const doc = await db
     .collection<Conversation>(COLLECTION_NAME)
@@ -70,7 +70,7 @@ app.delete("/conversations/:id", async (c) => {
   if (!ObjectId.isValid(id)) {
     return c.json({ error: "Invalid conversation ID" }, 400)
   }
-  const client = await clientPromise
+  const client = await clientPromise()
   const db = client.db(DB_NAME)
   const result = await db
     .collection<Conversation>(COLLECTION_NAME)
@@ -120,7 +120,7 @@ app.post("/chat", async (c) => {
         { role: "assistant", content: text, createdAt: now },
       ]
 
-      const client = await clientPromise
+      const client = await clientPromise()
       const db = client.db(DB_NAME)
       await db.collection<Conversation>(COLLECTION_NAME).updateOne(
         { _id: new ObjectId(conversationId) as unknown as Conversation["_id"] },
