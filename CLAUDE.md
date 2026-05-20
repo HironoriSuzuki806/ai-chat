@@ -119,12 +119,21 @@ const result = streamText({
 
 ## 開発コマンド
 
-```bash
-npm install
-npm run dev          # 開発サーバー起動（http://localhost:3000）
-npm run build        # 本番ビルド
-npm run typecheck    # 型チェック
-```
+プロジェクト管理コマンドは `Makefile` にまとめられています。`make <ターゲット>` で実行してください。
+
+| コマンド | 内容 |
+| --- | --- |
+| `make install` | `npm ci` + `prisma generate`（初回セットアップ・依存更新後） |
+| `make dev` | 開発サーバー起動（http://localhost:3000） |
+| `make build` | 本番ビルド |
+| `make typecheck` | 型チェック |
+| `make docker-build` | ローカル Docker イメージビルド |
+| `make docker-run` | ローカルコンテナ起動（http://localhost:3001） |
+| `make push` | Cloud Build でビルド＆ Artifact Registry へプッシュ |
+| `make deploy` | Cloud Run へデプロイ |
+| `make logs` | Cloud Run のログ確認 |
+
+通常のデプロイフロー: `make push && make deploy`
 
 ## コーディング規約
 
