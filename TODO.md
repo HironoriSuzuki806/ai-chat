@@ -107,3 +107,75 @@
 - [ ] Cloud Run の環境変数を更新する（`MONGODB_URI` — 本番Atlas接続文字列に差し替え）
       ※ MongoDB Atlas クラスター作成後に `gcloud run services update` で設定
 - [ ] デプロイ後のURLで全機能を確認する
+
+---
+
+## Phase 9: バグ修正・未実装箇所の対応
+
+### 🔴 Critical — データ損失・クラッシュリスク
+
+- [ ] **`lib/mongodb.ts`: 本番環境でコネクションが毎リクエスト新規生成**
+      - `NODE_ENV !== "development"` の分岐でキャッシュなしに `new MongoClient().connect()` を毎回呼ぶ
+      - リクエストごとに新規TCP接続が生成され、Atlas の接続数上限を消費する
+      - module-level の `let _prodClientPromise` でキャッシュするよう修正する
+
+- [ ] **`conversationId` が `null` のままメッセージ送信するとデータが保存されない**
+      - 初期状態（会話未選択）で `MessageInput` が有効なため、そのまま送信できてしまう
+      - `POST /api/chat` の `onFinish` は `!conversationId` で early return → MongoDB に保存されない
+      - 対策A: 会話未選択時は `MessageInput` を `disabled` にしてメッセージを送れなくする
+      - 対策B: `POST /api/chat` で `conversationId` がない場合に自動で会話を作成して保存する
+
+- [ ] **会話タイトルの自動生成が未実装**（CLAUDE.md 仕様: 最初のメッセージ先頭30文字）
+      - 現在は常に `"新しいチャット"` のまま変わらない
+      - `POST /api/chat` の `onFinish` で、会話のメッセージ数が0→1になるタイミングで
+        `$set: { title: userText.slice(0, 30) }` を実行する
+
+- [ ] **Cloud Run のタイムアウトが 60 秒と短い**
+      - Makefile の `make deploy` で `--timeout 60` を指定している
+      - AI の長い応答（コード生成・説明など）は 60 秒を超えることがある
+      - `--timeout 300`（5分）に変更する
+
+### 🟡 Important — UX・信頼性
+
+- [ ] **エラー状態の UI 表示がない**
+      - `chat-window.tsx`: `useChat` の `status === "error"` 時にユーザーへの通知がない
+      - `chat-window.tsx`: 会話履歴ロード失敗時に `catch(console.error)` のみ（UI に何も表示されない）
+      - エラーメッセージ表示 or トースト通知を追加する
+
+- [ ] **メッセージ送信後にサイドバーが自動更新されない**
+      - `ChatWindow` と `Sidebar` は兄弟コンポーネントで、送信完了を互いに通知する仕組みがない
+      - `page.tsx` に `onMessageSent` コールバックを追加し、`Sidebar` の `fetchConversations` を再実行する
+      - これにより `updatedAt` 順の再ソートとタイトル更新がサイドバーに即座に反映される
+
+- [ ] **ストリーミング中に会話を切り替えると旧ストリームが継続する**
+      - `page.tsx` の `<ChatWindow>` に `key` prop がないため `useChat` インスタンスが会話をまたいで共有される
+      - `<ChatWindow key={conversationId ?? "new"} ...>` を追加して会話切り替え時に強制リマウントする
+
+- [ ] **会話削除に確認ダイアログがない**
+      - `sidebar.tsx` の削除ボタンをクリックすると即座に削除される（アンドゥ不可）
+      - `AlertDialog`（shadcn/ui）で確認を挟む
+
+- [ ] **モバイルでサイドバーが常に表示されてチャットエリアが極端に狭くなる**
+      - `w-64 shrink-0` の固定幅サイドバーがモバイルで常時表示される
+      - ハンバーガーボタン + `Sheet`（shadcn/ui）でサイドバーをオーバーレイ表示するよう変更する
+
+### 🟢 Medium — コード品質・運用
+
+- [ ] **`POST /api/chat` の入力バリデーションがない**
+      - `messages` が `undefined` や空配列の場合に `agent.stream()` がクラッシュする可能性がある
+      - リクエスト先頭で `if (!messages?.length) return c.json({ error: "messages is required" }, 400)` を追加する
+
+- [ ] **Makefile `make deploy` に環境変数設定がなく、サービス再作成時に ENV が消失する**
+      - 現在の `make deploy` は `--set-env-vars` を含まないため、サービス削除後の初回デプロイで ENV が空になる
+      - `make set-env` ターゲットを追加して `.env.local` から読み取った値を `gcloud run services update` で設定できるようにする
+      - または Secret Manager を使用して環境変数を管理する
+
+### ⚪ Low — 改善・リファクタリング
+
+- [ ] **「+」ボタンで空の会話が即座に DB 作成される**
+      - キャンセルや別会話への移動で中身のない会話がDBに積み上がる
+      - 最初のメッセージ送信時に初めて会話を作成するフロー（send-then-create）に変更することを検討する
+
+- [ ] **会話一覧にページネーション・件数上限がない**
+      - 会話が増加すると全件取得で遅延が発生する可能性がある
+      - `GET /api/conversations` に `limit` / `skip` パラメータを追加することを検討する（当面は不要）
