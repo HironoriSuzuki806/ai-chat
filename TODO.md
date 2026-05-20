@@ -97,12 +97,13 @@
 
 ## Phase 8: Google Cloud Run デプロイ
 
-- [ ] Google Cloud Project を作成する
-- [ ] 必要なAPIを有効化する（Cloud Run, Cloud Build, Artifact Registry）
-- [ ] Artifact Registry にリポジトリを作成する
-- [ ] Cloud Build でコンテナイメージをビルド・プッシュする
-  - `gcloud builds submit --tag gcr.io/PROJECT_ID/ai-chat`
-- [ ] Cloud Run にデプロイする
-  - `gcloud run deploy ai-chat --image gcr.io/PROJECT_ID/ai-chat --platform managed --region asia-northeast1`
-- [ ] Cloud Run の環境変数を設定する（`MONGODB_URI`, `ANTHROPIC_API_KEY`）
+- [x] Google Cloud Project を作成する（`ai-chat-496815`）
+- [x] 必要なAPIを有効化する（Cloud Run, Cloud Build, Artifact Registry）
+- [x] Artifact Registry にリポジトリを作成する（`asia-northeast1-docker.pkg.dev/ai-chat-496815/ai-chat`）
+- [x] Cloud Build でコンテナイメージをビルド・プッシュする
+- [x] Cloud Run にデプロイする
+  - Service URL: https://ai-chat-262623125111.asia-northeast1.run.app
+  - 最小インスタンス数: 0、最大: 10、メモリ: 512Mi
+- [ ] Cloud Run の環境変数を更新する（`MONGODB_URI` — 本番Atlas接続文字列に差し替え）
+      ※ MongoDB Atlas クラスター作成後に `gcloud run services update` で設定
 - [ ] デプロイ後のURLで全機能を確認する
