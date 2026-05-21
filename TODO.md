@@ -104,9 +104,8 @@
 - [x] Cloud Run にデプロイする
   - Service URL: https://ai-chat-262623125111.asia-northeast1.run.app
   - 最小インスタンス数: 0、最大: 10、メモリ: 512Mi
-- [ ] Cloud Run の環境変数を更新する（`MONGODB_URI` — 本番Atlas接続文字列に差し替え）
-      ※ MongoDB Atlas クラスター作成後に `gcloud run services update` で設定
-- [ ] デプロイ後のURLで全機能を確認する
+- [x] Cloud Run の環境変数を更新する（`MONGODB_URI` — GitHub Secrets 経由でワークフローから設定）
+- [x] デプロイ後のURLで全機能を確認する（`/` と `/api/conversations` が 200 OK）
 
 ---
 
