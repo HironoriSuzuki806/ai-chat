@@ -15,7 +15,7 @@ import {
   MessageContent,
   MessageResponse,
 } from "@/components/ai-elements/message"
-import { MessageInput } from "@/components/message-input"
+import { MessageInput, type AttachedImage } from "@/components/message-input"
 
 interface ChatWindowProps {
   conversationId: string | null
@@ -25,11 +25,22 @@ interface ChatWindowProps {
 export function ChatWindow({ conversationId, onMessageSent }: ChatWindowProps) {
   const [loadError, setLoadError] = useState(false)
 
+  // Images that will be included in the next outgoing request
+  const pendingImagesRef = useRef<AttachedImage[]>([])
+  // Maps message index → images attached to that message (for inline display)
+  const messageImagesRef = useRef<Map<number, AttachedImage[]>>(new Map())
+
   const { messages, sendMessage, status, setMessages } = useChat({
     transport: new DefaultChatTransport({
       api: "/api/chat",
       prepareSendMessagesRequest({ messages }) {
-        return { body: { messages, conversationId } }
+        return {
+          body: {
+            messages,
+            conversationId,
+            pendingImages: pendingImagesRef.current,
+          },
+        }
       },
     }),
   })
@@ -48,6 +59,7 @@ export function ChatWindow({ conversationId, onMessageSent }: ChatWindowProps) {
     if (!conversationId) {
       setMessages([])
       setLoadError(false)
+      messageImagesRef.current.clear()
       return
     }
     setLoadError(false)
@@ -66,13 +78,26 @@ export function ChatWindow({ conversationId, onMessageSent }: ChatWindowProps) {
           })
         )
         setMessages(uiMessages)
+        messageImagesRef.current.clear()
       })
       .catch(() => setLoadError(true))
   }, [conversationId, setMessages])
 
+  const handleSend = (text: string, images: AttachedImage[]) => {
+    // Record which index the new user message will land at
+    const nextIndex = messages.length
+    if (images.length > 0) {
+      pendingImagesRef.current = images
+      messageImagesRef.current.set(nextIndex, images)
+    } else {
+      pendingImagesRef.current = []
+    }
+    // If no text, send a placeholder so the SDK doesn't drop the message
+    sendMessage({ text: text || " " })
+  }
+
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
-      {/* Error banners */}
       {loadError && (
         <div className="flex items-center gap-2 border-b bg-destructive/10 px-4 py-2 text-sm text-destructive">
           <AlertCircleIcon className="h-4 w-4 shrink-0" />
@@ -99,22 +124,38 @@ export function ChatWindow({ conversationId, onMessageSent }: ChatWindowProps) {
               icon={<BotIcon className="h-8 w-8" />}
             />
           )}
-          {messages.map((msg) => (
-            <Message key={msg.id} from={msg.role}>
-              <MessageContent>
-                {msg.parts.map((part, i) =>
-                  part.type === "text" ? (
-                    <MessageResponse key={i}>{part.text}</MessageResponse>
-                  ) : null
-                )}
-              </MessageContent>
-            </Message>
-          ))}
+          {messages.map((msg, index) => {
+            const attachedImages =
+              msg.role === "user" ? messageImagesRef.current.get(index) : undefined
+            return (
+              <Message key={msg.id} from={msg.role}>
+                <MessageContent>
+                  {attachedImages && attachedImages.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {attachedImages.map((img, i) => (
+                        <img
+                          key={i}
+                          src={img.dataUrl}
+                          alt={img.name}
+                          className="max-h-48 max-w-full rounded object-contain"
+                        />
+                      ))}
+                    </div>
+                  )}
+                  {msg.parts.map((part, i) =>
+                    part.type === "text" && part.text.trim() ? (
+                      <MessageResponse key={i}>{part.text}</MessageResponse>
+                    ) : null
+                  )}
+                </MessageContent>
+              </Message>
+            )
+          })}
         </ConversationContent>
       </Conversation>
 
       <MessageInput
-        onSend={(text) => sendMessage({ text })}
+        onSend={handleSend}
         disabled={status !== "ready" || !conversationId}
         placeholder={
           !conversationId

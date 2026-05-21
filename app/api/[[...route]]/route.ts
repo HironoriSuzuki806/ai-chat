@@ -79,20 +79,54 @@ app.delete("/conversations/:id", async (c) => {
   return c.json({ success: true })
 })
 
+interface PendingImage {
+  dataUrl: string
+  mimeType: string
+  name: string
+}
+
 // POST /api/chat — streaming chat response via Mastra agent
 app.post("/chat", async (c) => {
   const body = await c.req.json<{
     messages: UIMessage[]
     conversationId?: string
+    pendingImages?: PendingImage[]
   }>()
-  const { messages, conversationId } = body
+  const { messages, conversationId, pendingImages } = body
 
   if (!messages?.length) {
     return c.json({ error: "messages is required" }, 400)
   }
 
+  // Augment the last user message with image parts when images are attached
+  let messagesForAgent = messages
+  if (pendingImages?.length) {
+    let lastUserIdx = -1
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === "user") {
+        lastUserIdx = i
+        break
+      }
+    }
+    if (lastUserIdx >= 0) {
+      const imageParts = pendingImages.map((img) => ({
+        type: "image" as const,
+        image: img.dataUrl,
+        mimeType: img.mimeType,
+      }))
+      messagesForAgent = messages.map((msg, i) =>
+        i === lastUserIdx
+          ? ({
+              ...msg,
+              parts: [...(msg.parts ?? []), ...imageParts],
+            } as unknown as UIMessage)
+          : msg
+      )
+    }
+  }
+
   const agent = mastra.getAgent("chatAgent")
-  const agentStream = await agent.stream(messages)
+  const agentStream = await agent.stream(messagesForAgent)
 
   // toAISdkStream returns ReadableStream — cast to UIMessageChunk stream for createUIMessageStream writer
   const mastraStream = toAISdkStream(agentStream, {
@@ -118,8 +152,15 @@ app.post("/chat", async (c) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ?.text ?? (lastUserMsg as any)?.content ?? ""
 
+      // Build stored content: trim whitespace-only text, append image placeholder
+      const imageCount = pendingImages?.length ?? 0
+      const parts = [userText.trim(), imageCount > 0 ? `[画像添付: ${imageCount}枚]` : ""].filter(
+        Boolean
+      )
+      const userContent = parts.join(" ")
+
       const newMessages: Message[] = [
-        ...(userText ? [{ role: "user" as const, content: userText, createdAt: now }] : []),
+        ...(userContent ? [{ role: "user" as const, content: userContent, createdAt: now }] : []),
         { role: "assistant", content: text, createdAt: now },
       ]
 
@@ -131,7 +172,8 @@ app.post("/chat", async (c) => {
       // Auto-generate title from first user message (slice to 30 chars)
       const existing = await collection.findOne({ _id: oid }, { projection: { messages: 1 } })
       const isFirst = !existing?.messages?.length
-      const titleUpdate = isFirst && userText ? { title: userText.slice(0, 30) } : {}
+      const titleSource = userText.trim() || `[画像添付: ${imageCount}枚]`
+      const titleUpdate = isFirst ? { title: titleSource.slice(0, 30) } : {}
 
       await collection.updateOne(
         { _id: oid },
