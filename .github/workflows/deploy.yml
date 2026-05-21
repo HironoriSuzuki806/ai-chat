@@ -50,6 +50,9 @@ jobs:
           service: ${{ env.SERVICE }}
           region: ${{ env.REGION }}
           image: ${{ env.IMAGE }}:${{ github.sha }}
+          env_vars: |
+            MONGODB_URI=${{ secrets.MONGODB_URI }}
+            AI_GATEWAY_API_KEY=${{ secrets.AI_GATEWAY_API_KEY }}
           flags: |
             --min-instances=0
             --max-instances=10
