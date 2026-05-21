@@ -54,3 +54,10 @@ logs:
 		--region $(REGION) \
 		--project $(PROJECT_ID) \
 		--limit 50
+
+# Cloud Run の環境変数を .env.local から更新する（サービス再作成時などに使用）
+set-env:
+	gcloud run services update $(SERVICE) \
+		--region $(REGION) \
+		--project $(PROJECT_ID) \
+		--update-env-vars "$$(grep -v '^#' .env.local | grep '=' | xargs | tr ' ' ',')"

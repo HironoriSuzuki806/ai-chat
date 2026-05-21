@@ -13,6 +13,9 @@ declare global {
   var _mongoClientPromise: Promise<MongoClient> | undefined
 }
 
+// Module-level cache for production (survives across requests in the same container instance)
+let _prodClientPromise: Promise<MongoClient> | undefined
+
 function getClientPromise(): Promise<MongoClient> {
   const uri = process.env.MONGODB_URI
   if (!uri) throw new Error("MONGODB_URI environment variable is not set")
@@ -24,7 +27,10 @@ function getClientPromise(): Promise<MongoClient> {
     return global._mongoClientPromise
   }
 
-  return new MongoClient(uri, options).connect()
+  if (!_prodClientPromise) {
+    _prodClientPromise = new MongoClient(uri, options).connect()
+  }
+  return _prodClientPromise
 }
 
 export default getClientPromise

@@ -87,6 +87,10 @@ app.post("/chat", async (c) => {
   }>()
   const { messages, conversationId } = body
 
+  if (!messages?.length) {
+    return c.json({ error: "messages is required" }, 400)
+  }
+
   const agent = mastra.getAgent("chatAgent")
   const agentStream = await agent.stream(messages)
 
@@ -108,7 +112,6 @@ app.post("/chat", async (c) => {
       if (!text) return
 
       const now = new Date()
-      // Extract text content from the last user UIMessage parts
       const lastUserMsg = [...messages].reverse().find((m) => m.role === "user")
       const userText = lastUserMsg?.parts
         ?.find((p) => p.type === "text")
@@ -122,11 +125,19 @@ app.post("/chat", async (c) => {
 
       const client = await clientPromise()
       const db = client.db(DB_NAME)
-      await db.collection<Conversation>(COLLECTION_NAME).updateOne(
-        { _id: new ObjectId(conversationId) as unknown as Conversation["_id"] },
+      const collection = db.collection<Conversation>(COLLECTION_NAME)
+      const oid = new ObjectId(conversationId) as unknown as Conversation["_id"]
+
+      // Auto-generate title from first user message (slice to 30 chars)
+      const existing = await collection.findOne({ _id: oid }, { projection: { messages: 1 } })
+      const isFirst = !existing?.messages?.length
+      const titleUpdate = isFirst && userText ? { title: userText.slice(0, 30) } : {}
+
+      await collection.updateOne(
+        { _id: oid },
         {
           $push: { messages: { $each: newMessages } } as Record<string, unknown>,
-          $set: { updatedAt: now },
+          $set: { updatedAt: now, ...titleUpdate },
         }
       )
     },

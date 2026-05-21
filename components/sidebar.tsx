@@ -2,8 +2,20 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { cn } from "@/lib/utils"
-import { MessageSquareIcon, PlusIcon, Trash2Icon } from "lucide-react"
+import { MenuIcon, MessageSquareIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
 interface ConversationItem {
   _id: string
@@ -15,11 +27,13 @@ interface ConversationItem {
 interface SidebarProps {
   conversationId: string | null
   onSelect: (id: string | null) => void
+  refreshKey?: number
 }
 
-export function Sidebar({ conversationId, onSelect }: SidebarProps) {
+export function Sidebar({ conversationId, onSelect, refreshKey }: SidebarProps) {
   const [conversations, setConversations] = useState<ConversationItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [open, setOpen] = useState(false)
 
   const fetchConversations = useCallback(async () => {
     try {
@@ -34,7 +48,7 @@ export function Sidebar({ conversationId, onSelect }: SidebarProps) {
 
   useEffect(() => {
     fetchConversations()
-  }, [fetchConversations])
+  }, [fetchConversations, refreshKey])
 
   const handleNew = async () => {
     const res = await fetch("/api/conversations", {
@@ -46,18 +60,23 @@ export function Sidebar({ conversationId, onSelect }: SidebarProps) {
       const data = await res.json()
       await fetchConversations()
       onSelect(data._id)
+      setOpen(false)
     }
   }
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation()
+  const handleDelete = async (id: string) => {
     await fetch(`/api/conversations/${id}`, { method: "DELETE" })
     if (conversationId === id) onSelect(null)
     await fetchConversations()
   }
 
-  return (
-    <aside className="flex w-64 shrink-0 flex-col border-r">
+  const handleSelect = (id: string) => {
+    onSelect(id)
+    setOpen(false)
+  }
+
+  const content = (
+    <aside className="flex h-full w-64 flex-col">
       <div className="flex items-center justify-between border-b px-4 py-3">
         <span className="text-sm font-semibold">AI Chat</span>
         <Button size="icon" variant="ghost" onClick={handleNew} title="新しい会話">
@@ -77,7 +96,7 @@ export function Sidebar({ conversationId, onSelect }: SidebarProps) {
             {conversations.map((c) => (
               <li key={c._id}>
                 <button
-                  onClick={() => onSelect(c._id)}
+                  onClick={() => handleSelect(c._id)}
                   className={cn(
                     "group flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-accent",
                     conversationId === c._id && "bg-accent font-medium"
@@ -85,15 +104,34 @@ export function Sidebar({ conversationId, onSelect }: SidebarProps) {
                 >
                   <MessageSquareIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                   <span className="flex-1 truncate">{c.title}</span>
-                  <span
-                    role="button"
-                    aria-label="削除"
-                    title="削除"
-                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded opacity-0 transition-opacity hover:bg-accent-foreground/10 group-hover:opacity-100"
-                    onClick={(e) => handleDelete(c._id, e)}
-                  >
-                    <Trash2Icon className="h-3 w-3" />
-                  </span>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger
+                      aria-label="削除"
+                      title="削除"
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded opacity-0 transition-opacity hover:bg-accent-foreground/10 group-hover:opacity-100"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Trash2Icon className="h-3 w-3" />
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>会話を削除しますか？</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          「{c.title}」を削除します。この操作は取り消せません。
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDelete(c._id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          削除
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </button>
               </li>
             ))}
@@ -101,5 +139,26 @@ export function Sidebar({ conversationId, onSelect }: SidebarProps) {
         )}
       </nav>
     </aside>
+  )
+
+  return (
+    <>
+      {/* Desktop: always visible */}
+      <div className="hidden border-r lg:flex">
+        {content}
+      </div>
+
+      {/* Mobile: hamburger + Sheet overlay */}
+      <div className="flex items-center border-r lg:hidden">
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetTrigger className="m-2 flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent">
+            <MenuIcon className="h-5 w-5" />
+          </SheetTrigger>
+          <SheetContent side="left" className="w-64 p-0">
+            {content}
+          </SheetContent>
+        </Sheet>
+      </div>
+    </>
   )
 }

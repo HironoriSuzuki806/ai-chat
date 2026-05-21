@@ -7,9 +7,10 @@ import { SendIcon } from "lucide-react"
 interface MessageInputProps {
   onSend: (text: string) => void
   disabled?: boolean
+  placeholder?: string
 }
 
-export function MessageInput({ onSend, disabled }: MessageInputProps) {
+export function MessageInput({ onSend, disabled, placeholder }: MessageInputProps) {
   const [value, setValue] = useState("")
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -43,7 +44,7 @@ export function MessageInput({ onSend, disabled }: MessageInputProps) {
             el.style.height = "auto"
             el.style.height = `${el.scrollHeight}px`
           }}
-          placeholder="メッセージを入力... (Shift+Enterで改行)"
+          placeholder={placeholder ?? "メッセージを入力... (Shift+Enterで改行)"}
           disabled={disabled}
           rows={1}
           className="min-h-10 max-h-48 flex-1 resize-none rounded-md border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
