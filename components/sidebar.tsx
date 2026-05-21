@@ -94,45 +94,44 @@ export function Sidebar({ conversationId, onSelect, refreshKey }: SidebarProps) 
         ) : (
           <ul className="space-y-0.5">
             {conversations.map((c) => (
-              <li key={c._id}>
+              <li key={c._id} className="group relative">
                 <button
                   onClick={() => handleSelect(c._id)}
                   className={cn(
-                    "group flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-accent",
+                    "flex w-full items-center gap-2 rounded-md px-3 py-2 pr-9 text-left text-sm transition-colors hover:bg-accent",
                     conversationId === c._id && "bg-accent font-medium"
                   )}
                 >
                   <MessageSquareIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                   <span className="flex-1 truncate">{c.title}</span>
-
-                  <AlertDialog>
-                    <AlertDialogTrigger
-                      aria-label="削除"
-                      title="削除"
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded opacity-0 transition-opacity hover:bg-accent-foreground/10 group-hover:opacity-100"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Trash2Icon className="h-3 w-3" />
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>会話を削除しますか？</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          「{c.title}」を削除します。この操作は取り消せません。
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>キャンセル</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDelete(c._id)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                          削除
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
                 </button>
+
+                <AlertDialog>
+                  <AlertDialogTrigger
+                    aria-label="削除"
+                    title="削除"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 flex h-6 w-6 shrink-0 items-center justify-center rounded opacity-0 transition-opacity hover:bg-accent-foreground/10 group-hover:opacity-100"
+                  >
+                    <Trash2Icon className="h-3 w-3" />
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>会話を削除しますか？</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        「{c.title}」を削除します。この操作は取り消せません。
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleDelete(c._id)}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        削除
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </li>
             ))}
           </ul>

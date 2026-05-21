@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.78",
     "@ai-sdk/react": "^3.0.186",
     "@base-ui/react": "^1.4.1",
     "@mastra/ai-sdk": "^1.4.2",
