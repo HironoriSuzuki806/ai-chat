@@ -94,10 +94,11 @@ lib/
 # .env.local
 MONGODB_URI=mongodb+srv://...   # MongoDB接続文字列
 
-# AI Gateway認証（OIDC — 自動トークン管理、手動ローテーション不要）
-# セットアップ: vercel link && vercel env pull .env.local
-# Vercelデプロイ時は自動更新、ローカルは ~24h で再取得が必要
-VERCEL_OIDC_TOKEN=...           # vercel env pull で自動生成
+# AI Gateway認証（Vercel Dashboard で発行した長期 API キー）
+# 取得: https://vercel.com/dashboard → AI Gateway → Create API Key
+# ローカル: .env.local に設定
+# 本番: GitHub Secrets (AI_GATEWAY_API_KEY) 経由で Cloud Run に自動設定
+AI_GATEWAY_API_KEY=vatk_...
 ```
 
 ## AIの設定
