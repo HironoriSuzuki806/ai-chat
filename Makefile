@@ -46,7 +46,7 @@ deploy:
 		--max-instances 10 \
 		--memory 512Mi \
 		--cpu 1 \
-		--timeout 60 \
+		--timeout 300 \
 		--project $(PROJECT_ID)
 
 logs:
