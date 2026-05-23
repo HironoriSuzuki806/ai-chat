@@ -85,6 +85,25 @@ interface PendingImage {
   name: string
 }
 
+const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+const MAX_IMAGES = 10
+
+function isValidPendingImage(img: unknown): img is PendingImage {
+  if (!img || typeof img !== "object") return false
+  const { dataUrl, mimeType, name } = img as Record<string, unknown>
+
+  // Validate mimeType
+  if (typeof mimeType !== "string" || !ALLOWED_MIME_TYPES.includes(mimeType)) return false
+
+  // Validate dataUrl format
+  if (typeof dataUrl !== "string" || !dataUrl.startsWith(`data:${mimeType};base64,`)) return false
+
+  // Validate name
+  if (typeof name !== "string") return false
+
+  return true
+}
+
 // POST /api/chat — streaming chat response via Mastra agent
 app.post("/chat", async (c) => {
   const body = await c.req.json<{
@@ -96,6 +115,18 @@ app.post("/chat", async (c) => {
 
   if (!messages?.length) {
     return c.json({ error: "messages is required" }, 400)
+  }
+
+  // Validate pendingImages
+  if (pendingImages) {
+    if (pendingImages.length > MAX_IMAGES) {
+      return c.json({ error: `Too many images (max: ${MAX_IMAGES})` }, 400)
+    }
+    for (const img of pendingImages) {
+      if (!isValidPendingImage(img)) {
+        return c.json({ error: "Invalid image data" }, 400)
+      }
+    }
   }
 
   // Augment the last user message with image parts when images are attached
