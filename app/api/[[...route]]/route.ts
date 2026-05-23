@@ -87,6 +87,7 @@ interface PendingImage {
 
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"]
 const MAX_IMAGES = 10
+const MAX_BASE64_SIZE = 8 * 1024 * 1024 // 8MB base64 ≈ 6MB image
 
 function isValidPendingImage(img: unknown): img is PendingImage {
   if (!img || typeof img !== "object") return false
@@ -97,6 +98,10 @@ function isValidPendingImage(img: unknown): img is PendingImage {
 
   // Validate dataUrl format
   if (typeof dataUrl !== "string" || !dataUrl.startsWith(`data:${mimeType};base64,`)) return false
+
+  // Validate base64 payload size
+  const base64Data = dataUrl.split(",")[1]
+  if (!base64Data || base64Data.length > MAX_BASE64_SIZE) return false
 
   // Validate name
   if (typeof name !== "string") return false
