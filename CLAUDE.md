@@ -103,7 +103,7 @@ AI_GATEWAY_API_KEY=vatk_...
 
 ## AIの設定
 
-- **モデル**: `anthropic/claude-sonnet-4.6`（AI Gatewayルーティング）
+- **モデル**: `openai/gpt-4.1-mini`（AI Gatewayルーティング、無料ティア対応）
 - **ストリーミング**: `streamText` を使用
 - **システムプロンプト**: 親切で丁寧な日本語AIアシスタント
 
