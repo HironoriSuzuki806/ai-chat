@@ -45,3 +45,6 @@ next-env.d.ts
 
 # Claude Code local settings (may contain sensitive data)
 .claude/settings.local.json
+
+# Playwright MCP test artifacts
+.playwright-mcp/
